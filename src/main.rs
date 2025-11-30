@@ -341,7 +341,7 @@ impl Grid {
                     used += 1;
                 }
             }
-            // - see if can male immediate claim
+            // - see if can make immediate claim
             if used == n-1 {
                 // which state is missing?
                 let mut missed : Snumb = 0;  // might actually be 0
