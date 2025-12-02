@@ -179,28 +179,34 @@ impl Grid {
 
     // validate - check logic of current grid
     fn validate(&mut self) -> bool {
-        println!("{}","Validating grid".underline());
+        println!("{}", "Validating grid".underline());
 
         let mut valid = true;
         let mut ticked = [false; MAXSTATES];
         let mut start;
 
         // check horizontals
-        for y in 0..self.states { // per row
+        for y in 0..self.states {
+            // per row
             for el in 0..self.states {
                 ticked[el as usize] = false;
             }
 
             start = y * self.states;
             for x in 0..self.states {
-               //print!(" {}", x);
+                //print!(" {}", x);
                 let address = (start + x) as usize;
                 if self.cells[address].solved {
                     let sol = self.cells[address].solution as usize;
                     if ticked[sol] {
                         // this solution already used on this line
                         self.cells[address].highlight = 2;
-                        println!("Bad cell - horizontally repeated '{}' in ({},{})", self.symbols[sol], x+1,y+1);
+                        println!(
+                            "Bad cell - horizontally repeated '{}' in ({},{})",
+                            self.symbols[sol],
+                            x + 1,
+                            y + 1
+                        );
                         valid = false;
                     }
                     ticked[sol] = true;
@@ -209,19 +215,25 @@ impl Grid {
         }
 
         // check verticals
-        for x in 0..self.states { // per col
+        for x in 0..self.states {
+            // per col
             for el in 0..self.states {
                 ticked[el as usize] = false;
             }
-            
+
             for y in 0..self.states {
-                let address = (x + y*self.states) as usize;
+                let address = (x + y * self.states) as usize;
                 if self.cells[address].solved {
                     let sol = self.cells[address].solution as usize;
                     if ticked[sol] {
                         // this solution already used on this line
                         self.cells[address].highlight = 2;
-                        println!("Bad cell - vertically repeated '{}' in ({},{})", self.symbols[sol], x+1,y+1);
+                        println!(
+                            "Bad cell - vertically repeated '{}' in ({},{})",
+                            self.symbols[sol],
+                            x + 1,
+                            y + 1
+                        );
                         valid = false;
                     }
                     ticked[sol] = true;
@@ -231,7 +243,8 @@ impl Grid {
 
         // check blocks
         //println!("i={} s= {}", self.isqrt, self.states);
-        for b in 0..self.states { // per block
+        for b in 0..self.states {
+            // per block
             for el in 0..self.states {
                 ticked[el as usize] = false;
             }
@@ -242,14 +255,18 @@ impl Grid {
 
             for y in 0..self.isqrt {
                 for x in 0..self.isqrt {
-                    let address = (bx+by+x+y*self.states) as usize;
+                    let address = (bx + by + x + y * self.states) as usize;
                     //println!("a={} ", address);
                     if self.cells[address].solved {
                         let sol = self.cells[address].solution as usize;
                         if ticked[sol] {
                             // this solution already used in this block
                             self.cells[address].highlight = 2;
-                            println!("Bad block - repeated '{}' in block {}", self.symbols[sol], b+1);
+                            println!(
+                                "Bad block - repeated '{}' in block {}",
+                                self.symbols[sol],
+                                b + 1
+                            );
                             valid = false;
                         }
                         ticked[sol] = true;
@@ -261,24 +278,21 @@ impl Grid {
         valid
     }
 
-
-//  I think I want to be doing this:
-//     fn example(width: usize, height: usize) {
-//         // Base 1d array
-//         let mut grid_raw = vec![0; width * height];
-//
-//         // Vector of 'width' elements slices
-//         let mut grid_base: Vec<_> = grid_raw.as_mut_slice().chunks_mut(width).collect();
-//
-//         // Final 2d array `&mut [&mut [_]]`
-//         let grid = grid_base.as_mut_slice();
-//
-//         // Accessing data
-//         grid[0][0] = 4;
-//     }
-// Re: https://stackoverflow.com/questions/13212212/creating-two-dimensional-arrays-in-rust
-
-
+    //  I think I want to be doing this:
+    //     fn example(width: usize, height: usize) {
+    //         // Base 1d array
+    //         let mut grid_raw = vec![0; width * height];
+    //
+    //         // Vector of 'width' elements slices
+    //         let mut grid_base: Vec<_> = grid_raw.as_mut_slice().chunks_mut(width).collect();
+    //
+    //         // Final 2d array `&mut [&mut [_]]`
+    //         let grid = grid_base.as_mut_slice();
+    //
+    //         // Accessing data
+    //         grid[0][0] = 4;
+    //     }
+    // Re: https://stackoverflow.com/questions/13212212/creating-two-dimensional-arrays-in-rust
 
     // claim(r,c,state) - set a blank to a solution at (row,col)
     fn claim_rc(&mut self, row: usize, col: usize, sol: Snumb) {
@@ -289,7 +303,7 @@ impl Grid {
     // claim_a(a,state) - set a blank to a solution at addr=a
     fn claim_a(&mut self, address: usize, sol: Snumb) {
         if self.cells[address].solved {
-            println!("\nClaim a={} as {} failed",address, sol);
+            println!("\nClaim a={} as {} failed", address, sol);
             panic!();
         }
         self.cells[address].solved = true;
@@ -297,10 +311,9 @@ impl Grid {
         self.cells[address].highlight = 1;
     }
 
-    
     // validate - check logic of current grid
     fn solve_next(&mut self) -> u8 {
-        println!("{}","Running solve_next".underline());
+        println!("{}", "Running solve_next".underline());
 
         // return value is number of cells added
         // (this is used to re-call the fn until exhaustion)
@@ -312,10 +325,11 @@ impl Grid {
         let mut cticked = [[false; MAXSTATES]; MAXSTATES];
 
         // variables which simplifies expressions/readability
-        let n = self.states as usize;    // n = number of states (9 for Sudoku)
-        let bw = self.isqrt as usize;    // bw = box width (3 for Sudoku)
+        let n = self.states as usize; // n = number of states (9 for Sudoku)
+        let bw = self.isqrt as usize; // bw = box width (3 for Sudoku)
 
         // a) do one-off walk over grid to set row/col boolmaps
+        println!("{}", "a) Set boolmaps".italic());
         for row in 0..n {
             for col in 0..n {
                 let address = row * n + col;
@@ -325,75 +339,80 @@ impl Grid {
                         panic!()
                     }
                     rticked[row][sol] = true;
-                    cticked[col][sol] = true;                    
+                    cticked[col][sol] = true;
                     //println!("- {row},{col} occupied by {sol}");
                 }
             }
         }
 
         // b) do row based 'triple' rationalise (actually divided by isqrt)
-        /*
-        for i in 0..bw {    // this is the 
+        println!("{}", "b) 'triple' finder (under dev)".italic());
+        for i in 0..bw {
+            // this is the
             for state in 0..n {
-
+                // compile these values for state
                 let mut used = 0;
                 let mut rowusage = [false; MAXSTATES];
                 let mut slugmap = [[false; MAXROOTS]; MAXROOTS];
+
                 for row in 0..bw {
+                    // row means a row element of blocks on horiz row i
                     let start = (i * bw + row) * n;
                     //println!("Row {} ({})", row, start);
-                    for el in 0..n {    // across all cols whole row
-                        if self.cells[start+el].solved  && self.cells[start+el].solution==state as u8 {
+                    for el in 0..n {
+                        // across all cols whole row
+                        if self.cells[start + el].solved
+                            && self.cells[start + el].solution == state as u8
+                        {
                             used += 1;
-                            rowusage[row]=true;
-                            let slug=el/bw; // integer divide
-                            slugmap[row][slug]=true;
+                            rowusage[row] = true;
+                            let slug = el / bw; // integer divide
+                            slugmap[row][slug] = true;
                         }
                     }
                 }
 
-                if used==2 {
+                // we are only interested in rows where n-1 blocks are already populated
+                if used == 2 {
                     let mut targetrow: usize = 0;
                     for row in 0..bw {
                         if !rowusage[row] {
-                            targetrow=row;
+                            targetrow = row;
                             break;
                         }
                     }
                     println!("Block {} / State {} x 2 on row {}", i, state, targetrow);
-                    println!("{:?}",rowusage);
-                    println!("{:?}",slugmap);
-               }
+                    //println!("{:?}",rowusage);
+                    //println!("{:?}",slugmap);
+                }
             }
-        
         }
 
+        //panic!();
 
-panic!();
-*/
-
-        // b) check boolmaps for '8/9' used ... by row
-        let mut used:usize = 0;
+        // c) check boolmaps for '8/9' used ... by row
+        println!("{}", "c) check boolmaps for '8/9' used ... by row".italic());
+        let mut used: usize = 0;
         for row in 0..n {
             used = 0;
-            print!("R{:2}: ",self.symbols[row]);
+            print!("R{:2}: ", self.symbols[row]);
             for sol in 0..n {
                 if rticked[row][sol] {
-                    print!("{}",self.symbols[sol]);
+                    print!("{}", self.symbols[sol]);
                     used += 1;
                 }
             }
             // - see if can make immediate claim
-            if used == n-1 {
+            if used == n - 1 {
                 // which state is missing?
-                let mut missed : Snumb = 0;  // might actually be 0
+                let mut missed: Snumb = 0; // might actually be 0
                 for state in 0..n {
-                   if !rticked[row][state] {
+                    if !rticked[row][state] {
                         missed = state as Snumb;
                         break;
-                   }
+                    }
                 }
-                print!(" ... CLAIM - add {}\n",self.symbols[missed as usize]);
+                print!(" ... CLAIM - add {}\n", self.symbols[missed as usize]);
                 // where is the gap?
                 let mut address = 0; // init for compile
                 for col in 0..n {
@@ -407,27 +426,31 @@ panic!();
             println!()
         }
 
-        // c) check boolmaps for '8/9' used ... by column
+        // d) check boolmaps for '8/9' used ... by column
+        println!(
+            "{}",
+            "d) check boolmaps for '8/9' used ... by column".italic()
+        );
         for col in 0..n {
             used = 0;
-            print!("C{:2}: ",self.symbols[col]);
+            print!("C{:2}: ", self.symbols[col]);
             for sol in 0..n {
                 if cticked[col][sol] {
-                    print!("{}",self.symbols[sol]);
+                    print!("{}", self.symbols[sol]);
                     used += 1;
                 }
             }
             // - see if can male immediate claim
-            if used == n-1 {
+            if used == n - 1 {
                 // which state is missing?
-                let mut missed : Snumb = 0;  // might actually be 0
+                let mut missed: Snumb = 0; // might actually be 0
                 for state in 0..n {
-                   if !cticked[col][state] {
+                    if !cticked[col][state] {
                         missed = state as Snumb;
                         break;
-                   }
+                    }
                 }
-                print!(" ... CLAIM - add {}\n",self.symbols[missed as usize]);
+                print!(" ... CLAIM - add {}\n", self.symbols[missed as usize]);
                 // where is the gap?
                 let mut address = 0; // init for compile
                 for row in 0..n {
@@ -437,14 +460,16 @@ panic!();
                         return 1;
                     }
                 }
-            } 
+            }
             println!()
         }
 
-        // d) do block by block scan for 8/9 solved
-        let mut bticked= [false; MAXSTATES];
-        let mut used:usize = 0;
-        for b in 0..n { // per block
+        // e) do block by block scan for 8/9 solved
+        println!("{}", "e) do block by block scan for 8/9 solved".italic());
+        let mut bticked = [false; MAXSTATES];
+        let mut used: usize = 0;
+        for b in 0..n {
+            // per block
             for el in 0..n {
                 bticked[el as usize] = false;
             }
@@ -454,25 +479,24 @@ panic!();
             let by = (b / bw) * bw * n;
             println!("\nblock {} for {}+{}", b, bx, by);
 
-            let  mut memx: usize = 0;   // (x,y) of last free cell
-            let  mut memy: usize = 0;
-            let  mut mema: usize = 0;
+            let mut memx: usize = 0; // (x,y) of last free cell
+            let mut memy: usize = 0;
+            let mut mema: usize = 0;
             for y in 0..bw {
                 for x in 0..bw {
-                    let address = (bx + by + x + y*n) as usize;
+                    let address = (bx + by + x + y * n) as usize;
                     print!("a={} ", address);
                     if self.cells[address].solved {
                         let sol = self.cells[address].solution as usize;
                         if bticked[sol] {
                             // should not be possible - would mean dup solution
                             panic!()
-                        }
-                        else {                     
+                        } else {
                             bticked[sol] = true;
                         }
                     } else {
                         mema = address;
-                        print!("[save {}] ",address)
+                        print!("[save {}] ", address)
                     }
                 }
             }
@@ -483,42 +507,35 @@ panic!();
                     used += 1;
                 }
             }
-            if used == n-1 {
+            if used == n - 1 {
                 // which state is missing?
-                let mut missed : Snumb = 0;  // might actually be 0
+                let mut missed: Snumb = 0; // might actually be 0
                 for state in 0..n {
-                   if !bticked[state] {
+                    if !bticked[state] {
                         missed = state as Snumb;
                         break;
-                   }
+                    }
                 }
-                print!("CLAIM - add {} to {}\n",self.symbols[missed as usize], mema);
+                print!(
+                    "CLAIM - add {} to {}\n",
+                    self.symbols[missed as usize], mema
+                );
                 //panic!();
-            
+
                 if !self.cells[mema].solved {
                     self.claim_a(mema, missed);
                     return 1;
                 } else {
                     panic!()
                 }
-
             }
-
-
         }
 
         added
     }
 
-
-
-
-
-
-
-
     // print - write grid to stdout
-    fn print(&self, write_header:bool) {
+    fn print(&self, write_header: bool) {
         // calculate solved cell count
         let mut used: u32 = 0;
         let total: usize = self.cells.len();
@@ -551,9 +568,9 @@ panic!();
                 //print!(" {} ", self.state_dict.chars().nth(self.cells[i].solution as usize).unwrap());
                 let sym = format!("{}", self.symbols[(self.cells[i].solution) as usize]);
                 match self.cells[i].highlight {
-                1 => print!(" {} ", sym.green().bold()),
-                2 => print!(" {} ", sym.red().bold()),
-                _ => print!(" {} ", sym),
+                    1 => print!(" {} ", sym.green().bold()),
+                    2 => print!(" {} ", sym.red().bold()),
+                    _ => print!(" {} ", sym),
                 }
                 //print!(" {} ", sym.green().bold());
                 //print!(" {} ", sym);
@@ -666,15 +683,14 @@ fn main() {
         println!("Grid is not valid");
         g.print(false);
         std::process::exit(1)
-    }
-    else {
+    } else {
         println!("It's fine");
     }
 
-    while g.solve_next() >0 {
+    while g.solve_next() > 0 {
         g.print(false);
     }
-    
+
     // g.load("test2a.sud".to_owned());
     // g.validate();
     // g.save("test2aupd.sud".to_owned());
