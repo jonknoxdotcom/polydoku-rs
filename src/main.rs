@@ -332,6 +332,7 @@ impl Grid {
         }
 
         // b) do row based 'triple' rationalise (actually divided by isqrt)
+        /*
         for i in 0..bw {    // this is the 
             for state in 0..n {
 
@@ -369,7 +370,7 @@ impl Grid {
 
 
 panic!();
-
+*/
 
         // b) check boolmaps for '8/9' used ... by row
         let mut used:usize = 0;
