@@ -38,7 +38,8 @@ use std::{arch::aarch64, fmt};
 use colored::Colorize;
 
 // sudoku size (for 'classic', this is 9 states/cell, grid of 9 wide, 9 high)
-const MAXSTATES: usize = 64; // max number of diff states a cell can have
+const MAXSTATES: usize = 9; // max number of diff states a cell can have
+const MAXROOTS: usize = 3; // max number of block size (isqrt of MAXSTATES)
 const WIDTH: u8 = 9;
 const HEIGHT: u8 = 9;
 
@@ -308,7 +309,7 @@ impl Grid {
         // set up arrays row x state, and col x state
         println!("Computing row+col 'state claimed' boolmap");
         let mut rticked = [[false; MAXSTATES]; MAXSTATES];
-        let mut cticked: [[bool; 64]; 64] = [[false; MAXSTATES]; MAXSTATES];
+        let mut cticked = [[false; MAXSTATES]; MAXSTATES];
 
         // variables which simplifies expressions/readability
         let n = self.states as usize;    // n = number of states (9 for Sudoku)
@@ -329,6 +330,46 @@ impl Grid {
                 }
             }
         }
+
+        // b) do row based 'triple' rationalise (actually divided by isqrt)
+        for i in 0..bw {    // this is the 
+            for state in 0..n {
+
+                let mut used = 0;
+                let mut rowusage = [false; MAXSTATES];
+                let mut slugmap = [[false; MAXROOTS]; MAXROOTS];
+                for row in 0..bw {
+                    let start = (i * bw + row) * n;
+                    //println!("Row {} ({})", row, start);
+                    for el in 0..n {    // across all cols whole row
+                        if self.cells[start+el].solved  && self.cells[start+el].solution==state as u8 {
+                            used += 1;
+                            rowusage[row]=true;
+                            let slug=el/bw; // integer divide
+                            slugmap[row][slug]=true;
+                        }
+                    }
+                }
+
+                if used==2 {
+                    let mut targetrow: usize = 0;
+                    for row in 0..bw {
+                        if !rowusage[row] {
+                            targetrow=row;
+                            break;
+                        }
+                    }
+                    println!("Block {} / State {} x 2 on row {}", i, state, targetrow);
+                    println!("{:?}",rowusage);
+                    println!("{:?}",slugmap);
+               }
+            }
+        
+        }
+
+
+panic!();
+
 
         // b) check boolmaps for '8/9' used ... by row
         let mut used:usize = 0;
@@ -400,7 +441,7 @@ impl Grid {
         }
 
         // d) do block by block scan for 8/9 solved
-        let mut bticked: [bool; 64] = [false; MAXSTATES];
+        let mut bticked= [false; MAXSTATES];
         let mut used:usize = 0;
         for b in 0..n { // per block
             for el in 0..n {
@@ -589,6 +630,8 @@ fn main() {
         1, 0, 2,  0, 9, 0,  5, 0, 0, 
         0, 5, 6,  0, 1, 0,  0, 0, 7u8,
     ];
+
+    #[rustfmt::skip]
     let demo = vec![
         2, 0, 0,  0, 0, 0,  0, 0, 0, 
         3, 0, 0,  0, 0, 0,  0, 0, 0, 
