@@ -303,6 +303,72 @@ impl Grid {
     
     // validate - check logic of current grid
     fn solve_next(&mut self) -> u8 {
+
+        // do cross-check to see:  possible to put `state` in cell `element`?
+        // this takes into account solved cells (blocked)
+        // an attempt to cross-check a cell containing the target is a panic
+        // 
+        fn possible(g: &Grid, element: usize, state: Snumb) -> bool {
+
+            // simplify the expressions which use width
+            let width = g.states as usize;
+
+            // translate element address into (r,c) 
+            let r = element / width;
+            let c = element - r * width;
+            println!("Translated {} into {},{}",element,r,c);
+
+
+            // check the horiz row, returning early with false if can
+            for col in 0..width as usize {
+                // don't check self
+                // if c==col {
+                //     continue;
+                // }
+                // checking the ...
+                let address = r * width + col;
+                println!("R Addr={}",address);
+                if !g.cells[address].solved {
+                    continue;
+                }
+                if g.cells[address].solution==state {
+                    println!("Not possible due to row {} = {},{}",address,r,col);
+                    return false;
+                }
+            }
+
+            // check the vert column, returning early with false if can
+            for row in 0..width as usize {
+                // don't check self
+                // if r==row {
+                //     continue;
+                // }
+                // checking the ...
+                let address = row * width + c;
+                println!("C Addr={}",address);
+
+                if !g.cells[address].solved {
+                    continue;
+                }
+                if g.cells[address].solution==state {
+                    println!("Not possible due to column {} = {},{}",address,row,c);
+                    return false;
+                }
+            }
+
+            // has to be valid - return true
+            true
+        }
+
+        // // TEST middle cell can take state 4 (is centre free and can do 5?)
+        // let dummy = possible(self, 39, 3);
+        // println!("{}", dummy);
+        // return 0;
+
+        // ----------------
+
+
+
         println!("{}","Running solve_next".underline());
 
         // return value is number of cells added
